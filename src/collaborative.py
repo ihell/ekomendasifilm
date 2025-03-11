@@ -38,3 +38,4 @@ if __name__ == "__main__":
     user_id = 1  # Ganti dengan ID pengguna yang diinginkan
     recommendations = get_user_recommendations(user_id, user_item_matrix, similarity_matrix, movies)
     print("Rekomendasi untuk User", user_id, ":", recommendations)
+ 
