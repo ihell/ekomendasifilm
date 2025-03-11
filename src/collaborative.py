@@ -1,41 +1,34 @@
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
-def load_ratings(file_path):
-    """Membaca dataset ratings."""
-    return pd.read_csv(file_path)
-
-def create_user_item_matrix(ratings):
-    """Membuat matriks user-item dari data ratings."""
-    return ratings.pivot(index='userId', columns='movieId', values='rating').fillna(0)
-
-def calculate_similarity(user_item_matrix):
-    """Menghitung kemiripan antar pengguna menggunakan Cosine Similarity."""
-    return cosine_similarity(user_item_matrix)
-
-def get_user_recommendations(user_id, user_item_matrix, similarity_matrix, movies, top_n=5):
-    """Memberikan rekomendasi film untuk pengguna tertentu berdasarkan Collaborative Filtering."""
-    if user_id not in user_item_matrix.index:
-        return []
+def get_collaborative_recommendations(user_id, ratings, movies):
+    # Membuat pivot table dari ratings
+    user_movie_ratings = ratings.pivot(index='userId', columns='movieId', values='rating').fillna(0)
     
-    user_index = user_item_matrix.index.get_loc(user_id)
-    similarity_scores = similarity_matrix[user_index]
-    similar_users = np.argsort(similarity_scores)[::-1][1:]
+    # Menghitung similarity antar pengguna
+    from sklearn.metrics.pairwise import cosine_similarity
+    user_similarity = cosine_similarity(user_movie_ratings)
     
-    weighted_ratings = np.dot(similarity_scores, user_item_matrix)
-    recommended_movie_ids = np.argsort(weighted_ratings)[::-1]
+    # Mendapatkan indeks pengguna
+    user_index = user_movie_ratings.index.get_loc(user_id)
     
-    recommended_movies = movies[movies['movieId'].isin(recommended_movie_ids)].head(top_n)
-    return recommended_movies[['movieId', 'title']].values.tolist()
-
-if __name__ == "__main__":
-    ratings = load_ratings("../data/ratings.csv")
-    movies = pd.read_csv("../data/movies.csv")
-    user_item_matrix = create_user_item_matrix(ratings)
-    similarity_matrix = calculate_similarity(user_item_matrix)
+    # Mendapatkan skor similarity untuk pengguna tertentu
+    similarity_scores = user_similarity[user_index]
     
-    user_id = 1  # Ganti dengan ID pengguna yang diinginkan
-    recommendations = get_user_recommendations(user_id, user_item_matrix, similarity_matrix, movies)
-    print("Rekomendasi untuk User", user_id, ":", recommendations)
- 
+    # Mengurutkan skor similarity dan mendapatkan indeks pengguna yang mirip
+    similar_users = user_movie_ratings.index[similarity_scores.argsort()[::-1]]
+    
+    # Mendapatkan rekomendasi film berdasarkan pengguna yang mirip
+    similar_users_ratings = user_movie_ratings.loc[similar_users]
+    movie_scores = similar_users_ratings.mean(axis=0)
+    
+    # Menghapus film yang sudah ditonton oleh pengguna
+    watched_movies = user_movie_ratings.loc[user_id]
+    movie_scores = movie_scores[watched_movies == 0]
+    
+    # Mengurutkan film berdasarkan skor
+    recommendations = movie_scores.sort_values(ascending=False).index
+    
+    # Mengambil judul film dari DataFrame movies
+    recommended_movies = movies[movies['movieId'].isin(recommendations)]['title'].tolist()
+    
+    return recommended_movies

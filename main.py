@@ -1,12 +1,8 @@
-from src.recommend import recommend
-
-def main():
-    user_id = int(input("Masukkan ID pengguna: "))
-    movie_id = int(input("Masukkan ID film: "))
-    recommendations = recommend(user_id, movie_id)
-    print("Rekomendasi film berdasarkan kesukaan Anda:")
-    for rec in recommendations:
-        print(f"- {rec}")
+from src.recommend import get_recommendations
 
 if __name__ == "__main__":
-    main()
+    user_id = int(input("Masukkan User ID: "))  # Meminta input user ID
+    recommendations = get_recommendations(user_id)  # Mendapatkan rekomendasi
+    print("\n🎬 Rekomendasi Film untuk Anda:\n")
+    for idx, movie in enumerate(recommendations, 1):
+        print(f"{idx}. {movie}")

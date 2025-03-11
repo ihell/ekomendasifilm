@@ -1,10 +1,8 @@
-from src.data_loader import load_ratings, load_movies
-from src.collaborative import collaborative_filtering
-from src.content_based import content_based_recommendation
+import pandas as pd
+from src.collaborative import get_collaborative_recommendations
 
-def recommend(user_id, movie_id):
-    ratings = load_ratings('data/ratings.csv')
-    movies = load_movies('data/movies.csv')
-    model, testset = collaborative_filtering(ratings)
-    content_recs = content_based_recommendation(movie_id, movies)
-    return content_recs
+def get_recommendations(user_id):
+    # Membaca file ratings.csv dengan header yang sudah ada
+    ratings = pd.read_csv("data/ratings.csv", sep='\t', header=0)
+    movies = pd.read_csv("data/processed_movies.csv", sep=',')
+    return get_collaborative_recommendations(user_id, ratings, movies)
