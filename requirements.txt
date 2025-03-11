@@ -1,5 +1,8 @@
 pandas
+<<<<<<< HEAD
 numpy
+=======
+>>>>>>> 9f84de4 (Add initial implementation of Movie Recommendation System with collaborative and content-based filtering)
 scikit-learn
 scikit-surprise
 matplotlib
